@@ -1,35 +1,49 @@
-name: CI
+name: Deploy to gh-pages branch
 
 on:
   push:
     branches:
-      - main
+      - main  # 如果你的默认分支叫 master，请改成 master
+
+# 显式赋予 GITHUB_TOKEN 推送代码到 gh-pages 分支的写权限
+permissions:
+  contents: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: 1. Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: 2. Set up Node.js 20
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install pnpm
+      - name: 3. Install pnpm (全局安装，最稳妥)
         run: npm install -g pnpm
 
-      - name: Install dependencies
+      - name: 4. Install dependencies
         run: pnpm install
 
-      - name: Build project
+      - name: 5. Build project
         run: pnpm run build
 
-      - name: Deploy to GitHub Pages
+      - name: 6. 🔍 探雷探针：寻找真实产物目录 (防骂专用)
+        run: |
+          echo "=== 开始搜索编译产物 ==="
+          find . -type d -name "dist"
+          echo "========================"
+          echo "请确认下方的路径列表中，哪一个是网页代码所在的真实目录。"
+
+      - name: 7. Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publishing_branch: gh-pages
-          publish_dir: ./dist
-
+          publish_branch: gh-pages
+          # 🚨 重点警告：如果最后这步报错 "not found"，去上一步的日志里看路径，
+          # 然后回来把下面的 'apps/web/dist' 替换成日志里打印出来的正确路径！
+          publish_dir: apps/web/dist
+          # 如果每次构建都会产生没用的源文件映射，可以加上这行忽略它：
+          # exclude_assets: '**/*.map'
