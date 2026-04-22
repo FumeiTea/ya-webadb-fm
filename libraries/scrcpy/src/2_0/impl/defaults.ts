@@ -14,7 +14,7 @@ export const Defaults = {
     scid: undefined,
 
     videoCodec: "h264",
-    videoBitRate: 8000000,
+    videoBitRate: 80000000,
     videoCodecOptions: undefined,
     videoEncoder: undefined,
 
